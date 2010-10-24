@@ -24,24 +24,33 @@ if (!Function.prototype.bind) {
   };
 }
 
-function create(def) {
+function create(modelDefinition) {
   
-  return function(data) {
+  var model;
+  
+  (function(def) {
     var properties = {},  // internal datastore
+        valid = undefined,
+        unvalidated = true,
         errors = [];  // populated when the `valid` key is accessed
 
-    // populate instance field properties
-    if (data) {
-      for (var name in data) {
-        properties[name] = data[name];
+    model = function(data) {
+      // populate instance field properties
+      if (data) {
+        for (var name in data) {
+          properties[name] = data[name];
+        }
       }
-    }
-    
-    Object.keys(def).forEach(function(key) {
+    };
 
-      Object.defineProperty(this, key, {
+    Object.keys(def).forEach(function(key) {
+      
+      Object.defineProperty(model.prototype, key, {
         get: function() { return properties[key]; },
-        set: function(x) { properties[key] = x; },
+        set: function(x) {
+          unvalidated = true;
+          properties[key] = x;
+        },
         enumerable: true,
         configurable: true
       });
@@ -72,35 +81,50 @@ function create(def) {
         delete def[key].validator;
         def[key].validators = validators;
       }
-    }.bind(this));
 
-    Object.defineProperty(this, "valid", {
+    }.bind(model.prototype));
+
+    Object.defineProperty(model.prototype, "valid", {
       get: function() {
-        errors = [];
+        
+        if (unvalidated) {
+          errors = [];
+          valid = true;
+          
+          console.log("validating", this);
+          
+          for (var key in def) {
+            var value = properties[key];
 
-        var valid = true;
-
-        for (var key in def) {
-          var value = properties[key];
-
-          if (def[key].validators) {
-            def[key].validators.forEach(function(v) {
-              var result = v.test(value);
-              if (!result) {
-                valid = false;
-                errors.push(v.message.replace("{key}", key));
-              }
-            }, this);
+            if (def[key].validators) {
+              def[key].validators.forEach(function(v) {
+                var result = v.test(value);
+                if (!result) {
+                  valid = false;
+                  errors.push(v.message.replace("{key}", key));
+                }
+              }, model.prototype);
+            }
           }
+          unvalidated = false;
         }
         return valid;
-      }}
-    );
-
-    this.__defineGetter__("errors", function() {
-      return errors;
+      },
+      enumerable: false,
+      configurable: false
     });
-  };
+
+    Object.defineProperty(model.prototype, "errors", {
+      get: function() {
+        return errors;
+      },
+      enumerable: false,
+      configurable: false
+    });
+
+  })(modelDefinition);
+
+  return model;
 }
 
 
@@ -147,10 +171,11 @@ var Dog = create({
   }
 });
 
-var dog = new Dog();
-dog.name = "dan";
-dog.canSit = "no";
-console.log(dog.valid, dog.errors);
+var itska = new Dog();
+var sara = new Dog();
+
+console.log(itska.valid, sara.valid);
+
 
 
 // exports.create = create;
