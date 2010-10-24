@@ -26,105 +26,107 @@ if (!Function.prototype.bind) {
 
 function create(modelDefinition) {
   
-  var model;
-  
-  (function(def) {
-    var properties = {},  // internal datastore
-        valid = undefined,
-        unvalidated = true,
-        errors = [];  // populated when the `valid` key is accessed
+  return (function(def) {
 
     model = function(data) {
+      var initialized = false,
+          properties = {},  // internal datastore
+          valid = undefined,
+          unvalidated = true,
+          errors = [];  // populated when the `valid` key is accessed
+
       // populate instance field properties
       if (data) {
         for (var name in data) {
           properties[name] = data[name];
         }
       }
-    };
-
-    Object.keys(def).forEach(function(key) {
       
-      Object.defineProperty(model.prototype, key, {
-        get: function() { return properties[key]; },
-        set: function(x) {
-          unvalidated = true;
-          properties[key] = x;
-        },
-        enumerable: true,
-        configurable: true
-      });
-    
-      var validators = [];
+      if (!initialized) {
+        initialized = true;
+        
+        Object.keys(def).forEach(function(key) {
 
-      // Convert `required` flag into a validator
-      if (def[key].required) {
-        validators.push({
-          test: function(value) {
-            return !(value == null || value == undefined || value == "");
+          Object.defineProperty(this, key, {
+            get: function() { return properties[key]; },
+            set: function(x) {
+              unvalidated = true;
+              properties[key] = x;
+            },
+            enumerable: true,
+            configurable: true
+          });
+
+          var validators = [];
+
+          // Convert `required` flag into a validator
+          if (def[key].required) {
+            validators.push({
+              test: function(value) {
+                return !(value == null || value == undefined || value == "");
+              },
+              message: '"{key}" is required but has no value.'
+            });
+
+            delete def[key].required;
+          }
+
+          if (def[key].validator) {
+            if (Array.isArray(def[key].validator)) {
+              for(var i=0; i<def[key].validator.length; i++) {
+                validators.push(def[key].validator[i]);
+              }
+            } else {
+              validators.push(def[key].validator);
+            }
+
+            delete def[key].validator;
+            def[key].validators = validators;
+          }
+
+        }.bind(this));
+
+        Object.defineProperty(this, "valid", {
+          get: function() {
+
+            if (unvalidated) {
+              errors = [];
+              valid = true;
+
+              for (var key in def) {
+                var value = properties[key];
+
+                if (def[key].validators) {
+                  def[key].validators.forEach(function(v) {
+                    var result = v.test(value);
+                    if (!result) {
+                      valid = false;
+                      errors.push(v.message.replace("{key}", key));
+                    }
+                  }, this);
+                }
+              }
+              unvalidated = false;
+            }
+            return valid;
           },
-          message: '"{key}" is required but has no value.'
+          enumerable: false,
+          configurable: false
         });
 
-        delete def[key].required;
+        Object.defineProperty(this, "errors", {
+          get: function() {
+            return errors;
+          },
+          enumerable: false,
+          configurable: false
+        });
       }
+    };
 
-      if (def[key].validator) {
-        if (Array.isArray(def[key].validator)) {
-          for(var i=0; i<def[key].validator.length; i++) {
-            validators.push(def[key].validator[i]);
-          }
-        } else {
-          validators.push(def[key].validator);
-        }
-
-        delete def[key].validator;
-        def[key].validators = validators;
-      }
-
-    }.bind(model.prototype));
-
-    Object.defineProperty(model.prototype, "valid", {
-      get: function() {
-        
-        if (unvalidated) {
-          errors = [];
-          valid = true;
-          
-          console.log("validating", this);
-          
-          for (var key in def) {
-            var value = properties[key];
-
-            if (def[key].validators) {
-              def[key].validators.forEach(function(v) {
-                var result = v.test(value);
-                if (!result) {
-                  valid = false;
-                  errors.push(v.message.replace("{key}", key));
-                }
-              }, model.prototype);
-            }
-          }
-          unvalidated = false;
-        }
-        return valid;
-      },
-      enumerable: false,
-      configurable: false
-    });
-
-    Object.defineProperty(model.prototype, "errors", {
-      get: function() {
-        return errors;
-      },
-      enumerable: false,
-      configurable: false
-    });
+    return model;
 
   })(modelDefinition);
-
-  return model;
 }
 
 
