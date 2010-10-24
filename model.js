@@ -1,4 +1,3 @@
-// TODO: defaultValue for required fields
 // TODO: save method
 // TODO: how do we create one of these from a record or database?
 // TODO: break out into individual files
