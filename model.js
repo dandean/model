@@ -28,7 +28,7 @@ function create(modelDefinition) {
   
   return (function(def) {
 
-    model = function(data) {
+    return function(data) {
       var initialized = false,
           properties = {},  // internal datastore
           valid = undefined,
@@ -63,7 +63,8 @@ function create(modelDefinition) {
           if (def[key].required) {
             validators.push({
               test: function(value) {
-                return !(value == null || value == undefined || value == "");
+                var isValid =  !(value == null || value == undefined || value == "");
+                return isValid;
               },
               message: '"{key}" is required but has no value.'
             });
@@ -98,7 +99,8 @@ function create(modelDefinition) {
 
                 if (def[key].validators) {
                   def[key].validators.forEach(function(v) {
-                    var result = v.test(value);
+                    var defaultValue = def[key].defaultValue;
+                    var result = (typeof(defaultValue) != 'undefined' && defaultValue == value) ||  v.test(value);
                     if (!result) {
                       valid = false;
                       errors.push(v.message.replace("{key}", key));
@@ -124,8 +126,6 @@ function create(modelDefinition) {
       }
     };
 
-    return model;
-
   })(modelDefinition);
 }
 
@@ -150,6 +150,7 @@ var Person = create({
 
 var Dog = create({
   canSit: {
+    defaultValue: "!!!",
     required: true,
     validator: {
       test: /^yes|no$/i,
