@@ -1,5 +1,6 @@
 // TODO: save method
 // TODO: how do we create one of these from a record or database?
+// TODO: field validators should consist on an Array
 
 function create(modelDefinition) {
   
@@ -37,6 +38,7 @@ function create(modelDefinition) {
           var validators = [];
 
           // Convert `required` flag into a validator
+          
           if (def[key].required) {
             validators.push({
               test: function(value) {
@@ -48,7 +50,7 @@ function create(modelDefinition) {
 
             delete def[key].required;
           }
-
+          
           if (def[key].validator) {
             if (Array.isArray(def[key].validator)) {
               for(var i=0; i<def[key].validator.length; i++) {
@@ -59,25 +61,30 @@ function create(modelDefinition) {
             }
 
             delete def[key].validator;
+          }
+          
+          if (validators.length) {
             def[key].validators = validators;
           }
-
+          
         }.bind(this));
 
         Object.defineProperty(this, "valid", {
           get: function() {
-
+            
             if (unvalidated) {
               errors = [];
               valid = true;
-
+              
               for (var key in def) {
                 var value = properties[key];
-
+                
                 if (def[key].validators) {
+                  
                   def[key].validators.forEach(function(v) {
                     var defaultValue = def[key].defaultValue;
                     var result = (typeof(defaultValue) != 'undefined' && defaultValue == value) ||  v.test(value);
+                    
                     if (!result) {
                       valid = false;
                       errors.push(v.message.replace("{key}", key));
@@ -106,63 +113,4 @@ function create(modelDefinition) {
   })(modelDefinition);
 }
 
-
-var Person = create({
-  name: {
-    required: true,
-    validator: {
-      test: function(name) {
-        return name == "^[a-zA-Z ]$";
-      },
-      message: "Name can contain only letters and spaces."
-    }
-  },
-  phone: {
-    validator: {
-      test: /\d{10}/,
-      message: "Phone must be 10 digits long"
-    }
-  }
-});
-
-var Dog = create({
-  canSit: {
-    defaultValue: "!!!",
-    required: true,
-    validator: {
-      test: /^yes|no$/i,
-      message: "Either 'Yes' or 'No'"
-    }
-  },
-  name: {
-    required: true,
-    validator: [
-      {
-        test: function(name) {
-          return name == "dan";
-        },
-        message: "The name must be 'dan'"
-      },
-      {
-        test: /^\w{3}$/,
-        message: "The name must be 3 characters long"
-      }
-    ]
-  }
-});
-
-
-Evidence.TestCase.extend('Poking', {
-  testOne: function(t){
-    t.assertTrue(false);
-  }
-});
-
-//var itska = new Dog();
-//var sara = new Dog();
-//
-//console.log(itska.valid, sara.valid);
-
-
-
-// exports.create = create;
+exports.create = create;
