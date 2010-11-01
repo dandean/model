@@ -10,7 +10,7 @@ function create(modelDefinition) {
     return function(data) {
       var initialized = false,
           properties = {},  // internal datastore
-          valid = undefined,
+          valid = false,
           unvalidated = true,
           errors = [];  // populated when the `valid` key is accessed
 
@@ -72,53 +72,69 @@ function create(modelDefinition) {
             }
           }
           
+          if (rules.validation.length == 0) {
+            if (console && console.dir) console.dir(def);
+            throw new Error("The definition for field '" + key + "' is invalid.");
+          }
+          
+          rules.validation.forEach(function(rule, i) {
+            if (!("message" in rule)) throw new Error("Validation rule does not have a message.");
+            
+            if (!("test" in rule)) throw new Error("Validation rule does not have a test function.");
+            
+            var isFunction = rule.test instanceof Function;
+            var isRegExp = rule.test instanceof RegExp;
+            
+            if (!isFunction && !isRegExp) throw new TypeError("Validation rule test is not a Function or RegExp object.");
+          });
+
+          def[key] = rules;
+          
         }.bind(this));
         
-//        Object.defineProperty(this, "valid", {
-//          get: function() {
-//            
-//            if (unvalidated) {
-//              errors = [];
-//              valid = true;
-//              
-//              for (var key in def) {
-//                var value = properties[key];
-//                
-//                if (def[key].validators) {
-//                  
-//                  def[key].validators.forEach(function(v) {
-//                    var defaultValue = def[key].defaultValue;
-//                    var result = (typeof(defaultValue) != 'undefined' && defaultValue == value) ||  v.test(value);
-//                    
-//                    if (!result) {
-//                      valid = false;
-//                      errors.push(v.message.replace("{key}", key));
-//                    }
-//                  }, this);
-//                }
-//              }
-//              unvalidated = false;
-//            }
-//            return valid;
-//          },
-//          enumerable: false,
-//          configurable: false
-//        });
-//
-//        Object.defineProperty(this, "errors", {
-//          get: function() {
-//            return errors;
-//          },
-//          enumerable: false,
-//          configurable: false
-//        });
+        Object.defineProperty(this, "valid", {
+          get: function() {
+            
+            if (unvalidated) {
+              errors = [];
+              valid = true;
+              
+              for (var key in def) {
+                var value = properties[key];
+                
+                if (def[key].validation) {
+                  
+                  def[key].validation.forEach(function(v) {
+                    var defaultValue = def[key].defaultValue;
+                    var result = (typeof(defaultValue) != 'undefined' && defaultValue == value) || v.test(value);
+                    
+                    if (!result) {
+                      valid = false;
+                      errors.push(v.message.replace("{key}", key));
+                    }
+                  }, this);
+                }
+              }
+              unvalidated = false;
+            }
+            return valid;
+          },
+          enumerable: false,
+          configurable: false
+        });
+
+        Object.defineProperty(this, "errors", {
+          get: function() {
+            return errors;
+          },
+          enumerable: false,
+          configurable: false
+        });
       }
     };
 
   })(modelDefinition);
 }
-
-exports.create = create;
 
 var Model = {
   None: {
@@ -127,7 +143,7 @@ var Model = {
   },
   Required: {
     test: function(x) {
-      return !(value == null || value == undefined || value == "");
+      return !(x == null || x == undefined || x == "");
     },
     message: '"{field}" is required but has no value.'
   },
@@ -144,6 +160,8 @@ var Model = {
     message: "Not implemented"
   }
 };
+
+exports.create = create;
 
 Object.keys(Model).forEach(function(m) {
   Object.defineProperty(exports, m, {

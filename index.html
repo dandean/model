@@ -1,12 +1,53 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-	<title>index</title>
-	<script src="model.js" type="text/javascript" charset="utf-8"></script>
+  <title>index</title>
+  <script type="text/javascript" charset="utf-8">
+    var exports = window;
+    var require = function(x) {
+      if (x == "./model") {
+        return window;
+      } else {
+        return {
+          ok: function(value, message) {
+            console.assert(value, message);
+          },
+          equal: function(actual, expected, message) {
+            console.assert(actual == expected, message);
+          },
+          notEqual: function(actual, expected, message) {
+            console.assert(actual != expected, message);
+          },
+          "throws": function(block, type, message) {
+            var doesFail = false;
+            var msg = message;
+            
+            if(type && Object.prototype.toString.call(type) == "[object String]") {
+              msg = type;
+              type = undefined;
+            }
+
+            try {
+              block();
+            } catch (e) {
+              
+              if ((type && e instanceof type) || !type) {
+                doesFail = true;
+              }
+            }
+            console.assert(doesFail, TypeError, msg);
+          }
+        };
+      }
+    };
+  </script>
+  <script src="lib/bind.js" type="text/javascript" charset="utf-8"></script>
+  <script src="model.js" type="text/javascript" charset="utf-8"></script>
+  <script src="unit-tests.js" type="text/javascript" charset="utf-8"></script>
 </head>
 
 <body>
