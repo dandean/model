@@ -73,7 +73,6 @@ function create(modelDefinition) {
           }
           
           if (rules.validation.length == 0) {
-            if (console && console.dir) console.dir(def);
             throw new Error("The definition for field '" + key + "' is invalid.");
           }
           
