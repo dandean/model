@@ -1,8 +1,29 @@
 // TODO: save method
 // TODO: how do we create one of these from a record or database?
-// TODO: field validators should consist on an Array
 
-function create(modelDefinition) {
+// TODO: need to make it so that the class is defined during "create", not when
+// TODO: the model is instantiated.
+
+function create(defCreate) {
+  // Static vars to `create`
+  
+  var Constructor = (function(defConstructor) {
+    // Class-level vars defined during `create`
+    var ModelDefinition = defConstructor;
+
+    var Klass = function(data) {
+      // Instance-level vars, defined during instance construction
+    };
+    
+    Object.defineProperty(Klass.prototype, "def", {
+      value: ModelDefinition
+    });
+    
+    return Klass;
+    
+  })(defCreate);
+  
+  return Constructor;
     
   // TODO: what the fuck is "connection" and how does it work?
   return (function(def, connection) {
@@ -132,7 +153,7 @@ function create(modelDefinition) {
       }
     };
 
-  })(modelDefinition);
+  })(defCreate);
 }
 
 var Model = {
