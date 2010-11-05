@@ -80,3 +80,79 @@ Assert["throws"](function() {
   });
   new DoesNotHaveValidationTest();
 }, "Should have invalid definition message key.");
+
+
+var HasSubscribers = Model.create({
+  prop1: Model.None,
+  prop2: Model.None
+});
+
+var hasSubscribers = new HasSubscribers(),
+    classSubscriberSawChange,
+    propValueAfterClassSubscriber,
+    instanceSubscriberSawChange,
+    propValueAfterInstanceSubscriber;
+
+HasSubscribers.subscribe("prop1", function(value, old) {
+  classSubscriberSawChange = true;
+  propValueAfterClassSubscriber = value;
+});
+hasSubscribers.subscribe("prop1", function(value, old) {
+  instanceSubscriberSawChange = true;
+  propValueAfterInstanceSubscriber = value;
+});
+
+hasSubscribers.prop1 = "one";
+
+Assert.equal(classSubscriberSawChange, true);
+Assert.equal(instanceSubscriberSawChange, true);
+Assert.equal(propValueAfterClassSubscriber, "one");
+Assert.equal(propValueAfterInstanceSubscriber, "one");
+
+HasSubscribers.unsubscribe("prop1");
+classSubscriberSawChange = false;
+instanceSubscriberSawChange = false;
+
+hasSubscribers.prop1 = "two";
+Assert.equal(classSubscriberSawChange, false);
+Assert.equal(instanceSubscriberSawChange, true);
+Assert.equal(propValueAfterClassSubscriber, "one");
+Assert.equal(propValueAfterInstanceSubscriber, "two");
+
+hasSubscribers.unsubscribe("prop1");
+classSubscriberSawChange = false;
+instanceSubscriberSawChange = false;
+
+hasSubscribers.prop1 = "three";
+Assert.equal(classSubscriberSawChange, false);
+Assert.equal(instanceSubscriberSawChange, false);
+Assert.equal(propValueAfterClassSubscriber, "one");
+Assert.equal(propValueAfterInstanceSubscriber, "two");
+
+var cb1SawChange = false,
+    cb2SawChange = false;
+
+var callback = function(value, old) {
+  cb1SawChange = true;
+};
+
+hasSubscribers.subscribe("prop2", callback);
+hasSubscribers.subscribe("prop2", function(value, old) {
+  cb2SawChange = true;
+});
+
+hasSubscribers.prop2 = "four";
+
+Assert.equal(cb1SawChange, true);
+Assert.equal(cb2SawChange, true);
+
+hasSubscribers.unsubscribe("prop2", callback);
+
+cb1SawChange = false;
+cb2SawChange = false;
+
+hasSubscribers.prop2 = "five";
+Assert.equal(cb1SawChange, false);
+Assert.equal(cb2SawChange, true);
+
+HasSubscribers.unsubscribe();

@@ -36,18 +36,20 @@ function create(defCreate) {
   
   var Constructor = (function(defConstructor) {
     // Class-level vars defined during `create`.
-    var ModelDefinition = defConstructor;
+    var modelDefinition = defConstructor;
+    var classLevelPropertyChangedCallbacks = {};
 
     var Klass = function(data) {
       // Instance-level vars, defined during instance construction.
       var isValid = false;
+      var instancePropChangedCallbacks = {};
       
       // `data` and `validated` fields need to be defined on THIS instead of the
       // prototype so that the property descriptors are enforced.
       Object.defineProperties(this, {
-        "data": { value: {} },
-        "validated": { value: false, writable: true },
-        "errors": { value: [] },
+        data: { value: {} },
+        validated: { value: false, writable: true },
+        errors: { value: [] },
         valid: {
           get: function() {
             if (!this.validated) {
@@ -76,16 +78,46 @@ function create(defCreate) {
             }
             return isValid;
           }
+        },
+        subscribe : {
+          value: function(name, cb) {
+            if (name in instancePropChangedCallbacks) {
+              instancePropChangedCallbacks[name].push(cb);
+            }
+          }
+        },
+        unsubscribe : {
+          value: function(name, cb) {
+            if (typeof cb == 'undefined') {
+              instancePropChangedCallbacks[name] = [];
+            } else {
+              instancePropChangedCallbacks[name] = instancePropChangedCallbacks[name].filter(function(i) {
+                return i != cb;
+              });
+            }
+          }
         }
       });
 
       // Getter/Setter for each data property.
       Object.keys(this.definition).forEach(function(key) {
+        
+        instancePropChangedCallbacks[key] = [];
+        
         Object.defineProperty(this, key, {
           get: function() { return this.data[key]; },
           set: function(value) {
             this.validated = false;
+            var old = this.data[key];
             this.data[key] = value;
+            
+            instancePropChangedCallbacks[key].forEach(function(cb){
+              cb(value, old);
+            });
+            
+            classLevelPropertyChangedCallbacks[key].forEach(function(cb){
+              cb(value, old);
+            });
           },
           enumerable: true
         });
@@ -100,14 +132,16 @@ function create(defCreate) {
     };
     
     // Build up the field value validation rules
-    Object.keys(ModelDefinition).forEach(function(key) {
+    Object.keys(modelDefinition).forEach(function(key) {
+      
+      classLevelPropertyChangedCallbacks[key] = [];
 
       var rules = {
         defaultValue: undefined,
         validation: []
       };
       
-      var spec = ModelDefinition[key];
+      var spec = modelDefinition[key];
       
       if (Array.isArray(spec)) {
         // spec is an array, use it as an array of validator defs
@@ -153,12 +187,33 @@ function create(defCreate) {
         if (!isFunction && !isRegExp) throw new TypeError("Validation rule test is not a Function or RegExp object.");
       });
 
-      ModelDefinition[key] = rules;
+      modelDefinition[key] = rules;
     });
 
     // Store the normalized property definition and validation on the Model type class.
     Object.defineProperty(Klass.prototype, "definition", {
-      value: ModelDefinition
+      value: modelDefinition
+    });
+    
+    Object.defineProperties(Klass, {
+      subscribe: {
+        value: function(name, cb) {
+          if (name in classLevelPropertyChangedCallbacks) {
+            classLevelPropertyChangedCallbacks[name].push(cb);
+          }
+        }
+      },
+      unsubscribe: {
+        value: function(name, cb) {
+          if (typeof cb == 'undefined') {
+            classLevelPropertyChangedCallbacks[name] = [];
+          } else {
+            classLevelPropertyChangedCallbacks[name] = classLevelPropertyChangedCallbacks[name].filter(function(i) {
+              return i != cb;
+            });
+          }
+        }
+      }
     });
     
     return Klass;
