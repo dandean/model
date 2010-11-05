@@ -17,13 +17,13 @@ var SingleRequiredProperty = Model.create({
 });
 
 instance = new SingleRequiredProperty();
-Assert.equal(instance.prop, undefined);
-Assert.equal(instance.valid, false);
+Assert.equal(instance.prop, undefined, "`prop` should be `undefined`.");
+Assert.equal(instance.valid, false, '`prop` is required, but is undefined, so should be invalid.');
 instance.prop = "radical";
-Assert.equal(instance.valid, true);
+Assert.equal(instance.valid, true, "`prop` now has a value so should be valid.");
 instance.prop = null;
-Assert.equal(instance.valid, false);
-Assert.equal(instance.errors.length, 1);
+Assert.equal(instance.valid, false, '`prop` is required, but is null, so should be invalid.');
+Assert.equal(instance.errors.length, 1, "`prop` should have 1 error.");
 
 // REGEXP VALIDATORS SHOULD AUTO-EXPAND INTO TEST METHODS
 var HasRegExpValidator = Model.create({
