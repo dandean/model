@@ -117,8 +117,8 @@ var Model = {
               });
 
               classLevelPropertyChangedCallbacks[key].forEach(function(cb){
-                cb(value, old);
-              });
+                cb(value, old, this);
+              }.bind(this));
             },
             enumerable: true
           });
