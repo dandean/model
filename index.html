@@ -7,10 +7,9 @@
 
   <title>index</title>
   <script type="text/javascript" charset="utf-8">
-    var exports = window;
     var require = function(x) {
       if (x == "./model") {
-        return window;
+        return Model;
       } else {
         return {
           ok: function(value, message) {
