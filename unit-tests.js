@@ -93,9 +93,13 @@ var hasSubscribers = new HasSubscribers(),
     instanceSubscriberSawChange,
     propValueAfterInstanceSubscriber;
 
-HasSubscribers.subscribe("prop1", function(value, old) {
+HasSubscribers.subscribe("prop1", function(value, old, instance) {
   classSubscriberSawChange = true;
   propValueAfterClassSubscriber = value;
+  
+  Assert.ok(instance instanceof HasSubscribers);
+  Assert.equal(2, Object.keys(instance).length);
+  Assert.equal(value, instance.prop1);
 });
 hasSubscribers.subscribe("prop1", function(value, old) {
   instanceSubscriberSawChange = true;
