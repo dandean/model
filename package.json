@@ -1,0 +1,22 @@
+{ "name" : "model"
+, "description" : "Data model generator with built-in validation and ES5 API goodness."
+, "version" : "0.0.5"
+, "homepage" : "http://github.com/dandean/model"
+, "author" : "Dan Dean <me@dandean.com> (http://dandean.com)"
+, "contributors" : []
+, "repository" :
+  { "type" : "git"
+  , "url" : "http://github.com/dandean/model.git"
+  }
+, "bugs" :
+  { "mail" : "me@dandean.com"
+  , "web" : "http://github.com/dandean/guid/model"
+  }
+, "main" : "guid"
+, "engines" : { "node" : ">=0.2.0" }
+, "licenses" :
+  [ { "type" : "MIT"
+    , "url" : "http://github.com/dandean/guid/raw/master/LICENSE"
+    }
+  ]
+}
