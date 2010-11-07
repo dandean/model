@@ -5,6 +5,7 @@ TODO Features:
 - Remove
 - Various DB adaptors
 - Client side storage adaptors
+- Make API more chainable
 */
 
 "use strict";
