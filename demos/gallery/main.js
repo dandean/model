@@ -1,3 +1,7 @@
+if (!Object.keys || !Array.isArray || !Object.defineProperty) {
+  throw new Error("This demo requires an ES5 compatible environment.");
+}
+
 var data = [
   {
     title: "Cranes and Pole",
@@ -43,6 +47,13 @@ var data = [
   }
 ];
 
+if (typeof NodeList.prototype.forEach === 'undefined') {
+  NodeList.prototype.forEach = Array.prototype.forEach;
+}
+if (typeof HTMLCollection.prototype.forEach === 'undefined') {
+  HTMLCollection.prototype.forEach = Array.prototype.forEach;
+}
+
 function Gallery(){
   var root = "http://www.jenniferzwick.com/public/img/photography/bilaterography/",
       state = new (Model.create({ index: Model.None }))(),
@@ -56,7 +67,7 @@ function Gallery(){
 
   state.subscribe("index", function(value) {
     var item = data[value];
-    Array.prototype.forEach.call(list.children, function(child, i) {
+    list.children.forEach(function(child, i) {
       if (i == value) {
         child.className = "active";
       } else {
@@ -86,7 +97,7 @@ function Gallery(){
   var clone = list.cloneNode(true);
   clone.id = "clone";
   document.body.appendChild(clone);
-  Array.prototype.forEach.call(clone.getElementsByTagName("li"), function(li) {
+  clone.getElementsByTagName("li").forEach(function(li) {
     li.innerHTML = "";
   });
   
