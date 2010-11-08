@@ -1,0 +1,86 @@
+body {
+  padding: 20px;
+  font-family: Georgia;
+  font-size: 12px;
+  margin: 0;
+}
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100px;
+  position: absolute;
+  z-index: 2;
+}
+  ul li {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 15px 0;
+    padding: 0;
+    -webkit-transform-origin: left top;
+    -webkit-transition: all 0.25s ease-in;
+    -webkit-transform: scale(1) translate(0, 0);
+  }
+    ul li img {
+      vertical-align: bottom;
+      width: 100px;
+      -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      -webkit-transform-origin: left top;
+      -webkit-transition: all 0.25s ease-in;
+      -webkit-transform: scale(1) translate(0, 0);
+    }
+   
+   li.active {
+     z-index: 3;
+   }
+     li.active img {
+       -webkit-transform: scale(6);
+       -webkit-box-shadow: 0 0 2px rgba(0,0,0,0.6);
+     }
+     li:nth-child(1).active {
+       -webkit-transform: translate(120px, 0);
+     }
+     li:nth-child(2).active {
+       -webkit-transform: translate(120px, -115px);
+     }
+     li:nth-child(3).active {
+       -webkit-transform: translate(120px, -230px);
+     }
+     li:nth-child(4).active {
+       -webkit-transform: translate(120px, -345px);
+     }
+     li:nth-child(5).active {
+       -webkit-transform: translate(120px, -460px);
+     }
+     li:nth-child(6).active {
+       -webkit-transform: translate(120px, -575px);
+     }
+  ul#clone {
+    position: relative;
+    z-index: 1;
+  }
+    ul#clone li {
+      background: rgba(0,0,0,0.1);
+      width: 100px;
+      height: 100px;
+    }
+div#info {
+  background: #4164c2;
+  color: rgba(255,255,255,0.9);
+  padding: 10px 20px;
+  text-align: right;
+  margin: -20px -20px 20px -20px;
+}
+  div#info a {
+    color: #CCC;
+  }
+  div#info h1 {
+    margin: 0;
+    font-size: 34px;
+    position: absolute;
+    font-weight: normal;
+  }
+  div#info p {
+    margin: 0;
+    font-family: "Lucida Grande";
+  }

@@ -52,23 +52,34 @@ Number.prototype.constrain = function(min, max) {
   return max;
 };
 
-function Application(){
+function Gallery(){
   var root = "http://www.jenniferzwick.com/public/img/photography/bilaterography/",
       state = new (Model.create({ index: Model.None }))(),
       min = 0,
-      max = data.length - 1;
+      max = data.length - 1,
+      list = document.createElement("ul"),
+      info = document.createElement("div");
+
+  document.body.appendChild(info);
+  info.id = "info";
 
   state.subscribe("index", function(value) {
     var item = data[value];
+    Array.prototype.forEach.call(list.children, function(child, i) {
+      if (i == value) {
+        child.className = "active";
+      } else {
+        child.className = "";
+      }
+    });
+    
+    var current = data[value];
+    info.innerHTML = "<h1>" + current.title + ", " + current.year  + "</h1>"
+      + "<p>by <a href='http://jenniferzwick.com' target='_blank'>Jennifer Zwick</a></p>"
+      + "<p>" + current.media + "</p>"
+      + "<p>" + current.size + "</p>";
   });
   
-  this.view = function(i) {
-    i = i.constrain(min, max);
-    state.index = i;
-    return this;
-  };
-  
-  var list = document.createElement("ul");
   data.forEach(function(item) {
     var li = document.createElement("li");
     var img = li.appendChild(document.createElement("img"));
@@ -77,14 +88,37 @@ function Application(){
     
     img.addEventListener("click", function(e) {
       var x = Array.prototype.indexOf.call(list.children, e.target.parentNode);
-      this.view(x);
+      state.index = x; // !!!
     }.bind(this), false);
   }, this);
   document.body.appendChild(list);
-  var clone = document.body.appendChild(list.cloneNode(true));
-  clone.className = "clone";
+  var clone = list.cloneNode(true);
+  clone.id = "clone";
+  document.body.appendChild(clone);
+  Array.prototype.forEach.call(clone.getElementsByTagName("li"), function(li) {
+    li.innerHTML = "";
+  });
+  
+  document.addEventListener("keydown", function(e) {
+    if (e.keyIdentifier && e.keyIdentifier.match(/^right|down|left|up$/i)) {
+      var next,
+          current = state.index;
+
+      if (e.keyIdentifier.match(/^right|down$/i)) {
+        next = (current == max) ? 0 : current + 1;
+
+      } else if (e.keyIdentifier.match(/^left|up$/i)) {
+        next = (current == 0) ? max : current - 1;
+      }
+
+      state.index = next; // !!!
+    }
+  }.bind(this), false);
+  
+  // Start the gallery out with the first item.
+  setTimeout(function() { state.index = 0; }, 250);
 }
 
 window.addEventListener("DOMContentLoaded", function() {
-  window.app = new Application();
+  window.gallery = new Gallery();
 }, false);  
