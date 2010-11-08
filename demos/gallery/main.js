@@ -43,15 +43,6 @@ var data = [
   }
 ];
 
-Number.prototype.constrain = function(min, max) {
-  if (this >= min && this <= max) {
-    return this;
-  } else if (this < min) {
-    return min;
-  }
-  return max;
-};
-
 function Gallery(){
   var root = "http://www.jenniferzwick.com/public/img/photography/bilaterography/",
       state = new (Model.create({ index: Model.None }))(),
