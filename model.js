@@ -231,7 +231,7 @@ var Model = {
   },
   Required: {
     test: function(x) {
-      return !(x == null || x == undefined || x == "");
+      return !(x === null || x === undefined || x === "");
     },
     message: '"{field}" is required but has no value.'
   },
@@ -240,11 +240,15 @@ var Model = {
     message: "Not implemented"
   },
   PhoneUS: {
-    test: function(x) { throw new Error("Not implemented."); },
+    test: function(x) {
+      return String(x).replace(/\D/g,'').match(/^\d{10}$/);
+    },
     message: "Not implemented"
   },
   Url: {
-    test: function(x) { throw new Error("Not implemented."); },
+    test: function(x) {
+      return x.match(/^http(s)?:\/\/[^<>\s]+$/i);
+    },
     message: "Not implemented"
   }
 };
