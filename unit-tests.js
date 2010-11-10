@@ -160,3 +160,41 @@ Assert.equal(cb1SawChange, false);
 Assert.equal(cb2SawChange, true);
 
 HasSubscribers.unsubscribe();
+
+Assert.equal(hasSubscribers, hasSubscribers.subscribe("prop1", function() {}));
+Assert.equal(hasSubscribers, hasSubscribers.unsubscribe("prop1"));
+
+Assert.equal(HasSubscribers, HasSubscribers.subscribe("prop1", function() {}));
+Assert.equal(HasSubscribers, HasSubscribers.unsubscribe("prop1"));
+
+var ValidatesLength = Model.create({
+  prop1: Model.MinLength(10, "`prop1` Must be at least 10 characters long."),
+  prop2: Model.MaxLength(10, "`prop2` Must be less than 10 characters long.")
+});
+
+var validatesLength = new ValidatesLength({
+  prop1: "hello",
+  prop2: "hello"
+});
+
+Assert.equal(false, validatesLength.valid);
+Assert.equal(1, validatesLength.errors.length);
+
+validatesLength.prop1 = "hello hello";
+
+Assert.equal(true, validatesLength.valid);
+Assert.equal(0, validatesLength.errors.length);
+
+
+var ValidatesPattern = Model.create({
+  prop1: Model.Pattern(/^\d{3}$/, "`prop1` must be a number with three digits.")
+});
+
+var validatesPattern = new ValidatesPattern({prop1: "543"});
+Assert.equal(true, validatesPattern.valid);
+Assert.equal(0, validatesPattern.errors.length);
+
+validatesPattern.prop1 = "AAA";
+
+Assert.equal(false, validatesPattern.valid);
+Assert.equal(1, validatesPattern.errors.length);

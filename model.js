@@ -8,7 +8,7 @@ TODO Features:
 - Make API more chainable
 */
 
-"use strict";
+//"use strict";
 
 // For Browser support (from prototype.js)
 if (!Function.prototype.bind) {
@@ -86,6 +86,7 @@ var Model = {
               if (name in instancePropChangedCallbacks) {
                 instancePropChangedCallbacks[name].push(cb);
               }
+              return this;
             }
           },
           unsubscribe : {
@@ -97,6 +98,7 @@ var Model = {
                   return i != cb;
                 });
               }
+              return this;
             }
           }
         });
@@ -203,6 +205,7 @@ var Model = {
             if (name in classLevelPropertyChangedCallbacks) {
               classLevelPropertyChangedCallbacks[name].push(cb);
             }
+            return Klass;
           }
         },
         unsubscribe: {
@@ -214,6 +217,7 @@ var Model = {
                 return i != cb;
               });
             }
+            return Klass;
           }
         }
       });
@@ -236,12 +240,18 @@ var Model = {
     message: '"{field}" is required but has no value.'
   },
   EmailAddress: {
-    test: function(x) { throw new Error("Not implemented."); },
+    // TODO: crib this shit from somewhere
+    test: function(x) {
+      var value = String(x);
+      return  !(value.trim().match(/^\.|\.$/))
+          &&  !(value.match(/\.@|@\./))
+          && !!(value.match(/[-\w.]@[-\w.]/i));
+    },
     message: "Not implemented"
   },
   PhoneUS: {
     test: function(x) {
-      return String(x).replace(/\D/g,'').match(/^\d{10}$/);
+      return String(x).replace(/\D/g,'').match(/\d{10}/);
     },
     message: "Not implemented"
   },
@@ -250,6 +260,36 @@ var Model = {
       return x.match(/^http(s)?:\/\/[^<>\s]+$/i);
     },
     message: "Not implemented"
+  },
+  MaxLength: function(length, message) {
+    return {
+      test: function(x) {
+        if (typeof x == 'string') {
+          return x.length <= length;
+        }
+        return false;
+      },
+      message: message
+    };
+  },
+  MinLength: function(length, message) {
+    return {
+      test: function(x) {
+        if (typeof x == 'string') {
+          return x.length >= length;
+        }
+        return false;
+      },
+      message: message
+    };
+  },
+  Pattern: function(pattern, message) {
+    return {
+      test: function(x) {
+        return !!pattern.test(x);
+      },
+      message: message || "This field does not match the specified pattern."
+    };
   }
 };
 
