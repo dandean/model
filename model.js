@@ -241,12 +241,11 @@ var Model = {
   EmailAddress: {
     // TODO: crib this shit from somewhere
     test: function(x) {
-      var value = String(x);
-      return  !(value.trim().match(/^\.|\.$/))
-          &&  !(value.match(/\.@|@\./))
-          && !!(value.match(/[-\w.]@[-\w.]/i));
+      // Source: http://fightingforalostcause.net/misc/2006/compare-email-regex.php
+      var regex = /^([\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+\.)*[\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+@((((([a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z])\.)+[a-z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)$/i;
+      return regex.text(String(x));
     },
-    message: "Not implemented"
+    message: "Invalid email address."
   },
   PhoneUS: {
     test: function(x) {
@@ -261,7 +260,7 @@ var Model = {
     message: "Not implemented"
   },
   MaxLength: function(length, message) {
-    if (!(length instanceof Number)) throw new TypeError("Argument `length` must be a `Number`.");
+    if (!Object.prototype.toString.call(length) == '[object Number]') throw new TypeError("Argument `length` must be a `Number`.");
 
     return {
       test: function(x) {
@@ -274,7 +273,7 @@ var Model = {
     };
   },
   MinLength: function(length, message) {
-    if (!(length instanceof Number)) throw new TypeError("Argument `length` must be a `Number`.");
+    if (!Object.prototype.toString.call(length) == '[object Number]') throw new TypeError("Argument `length` must be a `Number`.");
 
     return {
       test: function(x) {
