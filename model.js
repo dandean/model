@@ -5,10 +5,9 @@ TODO Features:
 - Remove
 - Various DB adaptors
 - Client side storage adaptors
-- Make API more chainable
 */
 
-//"use strict";
+"use strict";
 
 // For Browser support (from prototype.js)
 if (!Function.prototype.bind) {
@@ -262,6 +261,8 @@ var Model = {
     message: "Not implemented"
   },
   MaxLength: function(length, message) {
+    if (!(length instanceof Number)) throw new TypeError("Argument `length` must be a `Number`.");
+
     return {
       test: function(x) {
         if (typeof x == 'string') {
@@ -273,6 +274,8 @@ var Model = {
     };
   },
   MinLength: function(length, message) {
+    if (!(length instanceof Number)) throw new TypeError("Argument `length` must be a `Number`.");
+
     return {
       test: function(x) {
         if (typeof x == 'string') {
@@ -284,6 +287,8 @@ var Model = {
     };
   },
   Pattern: function(pattern, message) {
+    if (!(pattern instanceof RegExp)) throw new TypeError("Argument `pattern` must be a `RegExp`.");
+
     return {
       test: function(x) {
         return !!pattern.test(x);
