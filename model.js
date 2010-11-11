@@ -31,6 +31,10 @@ if (!Function.prototype.bind) {
   };
 }
 
+function isNumber(object) {
+  return Object.prototype.toString.call(object) == '[object Number]';
+}
+
 var Model = {
   create: function(defCreate) {
     // Static vars to `create`
@@ -260,7 +264,7 @@ var Model = {
     message: "Not implemented"
   },
   MaxLength: function(length, message) {
-    if (!Object.prototype.toString.call(length) == '[object Number]') throw new TypeError("Argument `length` must be a `Number`.");
+    if (!isNumber(length)) throw new TypeError("Argument `length` must be a `Number`.");
 
     return {
       test: function(x) {
@@ -273,7 +277,7 @@ var Model = {
     };
   },
   MinLength: function(length, message) {
-    if (!Object.prototype.toString.call(length) == '[object Number]') throw new TypeError("Argument `length` must be a `Number`.");
+    if (!isNumber(length)) throw new TypeError("Argument `length` must be a `Number`.");
 
     return {
       test: function(x) {
